@@ -1,0 +1,239 @@
+---
+title: "Lab 2 - Quantitative"
+author: "PUT YOUR NAME HERE"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error=TRUE, warning=FALSE)
+library(mosaic)
+library(knitr)
+```
+
+# Preparation
+
+1.  Use Save As and save your copy of this as **Lab 2 Report.Rmd** (drop "starter").
+2.  Fill your name into the Author field above.
+3.  Open the document **STA 215 R Sheet ggformula How-To** from Blackboard and look at the Chapter 3 section. Use that reference to do the analyses requested below.
+4.  As you make changes, I encourage you to just keep Kniting the entire document rather than running code chunks here in the editor.
+
+# Part 1. Sale Price of Home Sales in Ames, Iowa
+
+Do Textbook **Problem 3.71** (p. 178). The code chunk below reads the data into a dataframe named **ames**. Each of these problems corresponds to a formula in the **CH3: One Quantitative** section of the 215 R sheet.
+
+```{r ames-input}
+ames <- read.csv("AmesHousing.csv")
+```
+
+(a) In the code chunk below write a command to obtain a five-number summary for the variable **SalePrice**. (Find the **Basic Numerical Summaries** heading.**)**
+
+```{r ames-a}
+
+```
+
+(b) Find the range and the interquartile range of the sales prices (label each).
+
+**ANSWER:**
+
+(c) In the code chunk below write a command to find the 90th percentile of the variable **SalePrice**. (Find the **Percentile** heading.)
+
+```{r ames-plots}
+
+```
+
+(d) Interpret what the 90th percentile tells you about Ames, IA housing sales from 2006 to 2010.
+
+**ANSWER:**
+
+(e) In the code chunk below write a command to get a boxplot of the variable **SalePrice**. (**Boxplot** heading)
+
+```{r, part e}
+# boxplot of the variable SalePrice
+
+```
+
+(f) In the code chunk below write a command to make a histogram of the variable **SalePrice** with first bar starting at 0 and last bar ending at 800,000 with jumps of 20,000 between bars. (**Histogram** heading)
+
+```{r, part f}
+# histogram of the variable SalePrice
+
+```
+
+(g) Describe the shape of the distribution in terms of symmetry. If you describe it as skewed, include another word or two indicating how much.
+
+**ANSWER:**
+
+(h) Is the data set unimodal, bimodal, or neither of these?
+
+**ANSWER:**
+
+(i) For any peaks, state the approximate sales price value.
+
+**ANSWER:**
+
+(j) Comment on the presence of outliers in the data set.
+
+**ANSWER:**
+
+(k) Find the mean and standard deviation.
+
+**ANSWER:**
+
+(l) What impact do the outliers have on the mean?
+
+**ANSWER:**
+
+(m) What impact do the outliers have on the standard deviation?
+
+**ANSWER:**
+
+------------------------------------------------------------------------
+
+**Moving on:** As you proceed through the rest of this assignment, refer back to commands you did in Part 1 to accomplish the same task. Then Copy, Paste, and Modify (I call this CPM) the command, updating the dataframe and the variable to match what you are working with.
+
+------------------------------------------------------------------------
+
+# Part 2 - Colleges Nationwide and in Michigan
+
+In Part 2 of this lab, you'll work with data downloaded from the College Scorecard (<https://collegescorecard.ed.gov/>), which is is a tool from the U.S. Department of Education for exploring information about colleges and universities. The dataframe **colleges2** has data on 73 variables for 1,732 institutions that meet these criteria:
+
+-   Is a Title IV school (processes federal financial aid)
+-   The "predominant undergraduate degree awarded" is at least a bachelor's degree
+
+## Descriptions of Selected Columns
+
+| COLUMN NAME | DESCRIPTION                                                                                                                                                              |
+|------------------|------------------------------------------------------|
+| control     | Type of Institution, 1=public 2=private                                                                                                                                  |
+| netprice    | Average net price for Title IV institutions                                                                                                                              |
+| ACTCMMID    | Midpoint between the 25th and 75th percentile of ACT cumulative scores.                                                                                                  |
+| RET_FT4     | Proportion of full-time, first-time, degree/certificate-seeking undergraduates who were enrolled at the institution in the fall 1 year after starting at the institution |
+| GradRate8yr | Proportion of entering students that graduated at this school within 8 years of entry                                                                                    |
+| FIRST_GEN   | Proportion of students that are first-generation (GVSU uses a different criteria)                                                                                        |
+
+The code below loads the R dataframe **colleges2** into the workspace. Then **colleges2** is "chained" into a dplyr function to select only a subset of variables to keep, and the resulting narrower dataframe replaces the original. **The dataframe to work with in this section is colleges2.**
+
+```{r read-college}
+load("colleges2.rda")
+colleges2 <- colleges2 %>%
+    select(INSTNM, STABBR, control, netprice, ACTCMMID, RET_FT4, GradRate8yr, FIRST_GEN)
+```
+
+## 1. Average Net Price of Colleges & Universities Nationwide
+
+(a) Request basic numerical summaries of **netprice** and a histogram of **netprice.**
+
+```{r, colleges partA}
+
+```
+
+(b) Describe the distribution, addressing the three key characteristics: shape, center, and spread.
+
+**ANSWER:**
+
+(c) Below write code to get side-by-side boxplots with **netprice** for the response variable, and **control** for the explanatory variable. (See 215 R sheet - CH 3 - **Boxplot By-Group**.)
+
+```{r, colleges partC}
+
+```
+
+(d) Write a sentence or two comparing the distribution of **netprice** for private vs public schools.
+
+**ANSWER:**
+
+------------------------------------------------------------------------
+
+## Colleges & Universities in Michigan
+
+### Some data wrangling -- create dataframes MIschools and GV (code provided)
+
+The first chained command creates the new dataframe **MIschools**, assigning to it the result of starting from the **colleges2** table and manipulating it in in three ways:
+
+-   filter() returns a subset of rows that meet the condition. Then ...
+-   select() returns a subset of columns -- the negation operator drops a column (it would have "MI" for every row here). Then ...
+-   arrange() sorts the rows by **control** and then by **INSTNM**.
+
+The second chained command defines a new object named **GV**, containing the one row in **MIschools** that has that value of **INSTNM**. So GV is a dataframe with one row. Then kable() prints the **MIschools** data in a nice looking table.
+
+```{r MI schools}
+MIschools <- colleges2 %>% 
+  filter(STABBR=="MI") %>%
+  select(-STABBR) %>%
+  arrange(control, INSTNM) 
+
+## Creates a one-row dataframe for GVSU
+GV <- MIschools %>% 
+  filter(INSTNM=="Grand Valley State University") 
+
+kable(MIschools)
+```
+
+### 2. Net Price of Michigan Schools
+
+The code below creates a comparative boxplot of **netprice** by **control** for the **MIschools** table. A horizontal reference line is added for GVSU's average net price. The use of the chaining operator, %\>%, allows us to overlay additional plot elements. In the style of Mad Libs, complete the sentence below by replacing the placeholders with your words.
+
+```{r MI net price}
+gf_boxplot(netprice~control, data=MIschools) %>%
+  gf_hline(yintercept=~GV$netprice, color="darkblue", linetype="dashed", size=1)
+```
+
+**INTERPRETATION:** The average net price for GVSU is **[ADVERB] [ADJECTIVE]** among public schools in Michigan, but would be **[ADVERB] [ADJECTIVE]** among private schools.
+
+## Boxplots of Four Variables for Schools in Michigan
+
+In each of the next sections, you are to do two things:
+
+1.  Copy/Paste/Modify (CPM) the command from above to create a comparative boxplot for the specified variable. You'll need to change the variable name in two places. You must match the case for variable names.
+2.  Complete the interpretive sentence that follows by filling in words where indicated.
+
+### 3. Retention Rate (RET_FT4)
+
+```{r MI-ret-rate}
+
+```
+
+**INTERPRETATION:**
+
+-   Among public schools there are two outliers with very high retention rates, but otherwise there is very little variation in retention rate
+-   The distribution of retention rate for private schools has a similar median to that of public schools but there is **[ADVERB] [ADJECTIVE]** variation.
+-   Among public schools the retention rate at GVSU is **[ADVERB] [ADJECTIVE]**
+
+### 4. ACT Combined Midpoint (ACTCMMID)
+
+```{r ACTCMMID}
+
+```
+
+**INTERPRETATION:**
+
+-   The ACT Midpoint for GVSU is very close to the **[STATISTIC]** of public schools in Michigan
+-   The ACT Midpoint for GVSU is very close to the **[STATISTIC]** of private schools in Michigan
+
+### 5. Graduation Rate (GradRate8yr)
+
+```{r MI-Grad}
+
+```
+
+**INTERPRETATION:**
+
+-   The distribution of Graduation Rate is **[TWO WORDS]** for public and private schools in Michigan,
+-   Grand Valley's Graduation Rate is higher than that of approximately **[VALUE]** percent of schools in Michigan
+
+### 6. First-Generation (FIRST_GEN)
+
+Proportion of students that are first-generation (GVSU uses a different criteria in publications)
+
+```{r MI-FirstGen}
+
+```
+
+INTERPRETATION:
+
+-   Relative to other public schools in Michigan, GVSU has a **[ADVERB] [ADJECTIVE]** proportion of students that are first-generation.
+-   Compared to public schools, there is **[ADVERB] [ADJECTIVE]** variability in the proportion of students that are first-generation at private schools.
+
+# Preparing to Submit
+
+When everything is complete, create a PDF document by selecting the arrow next to Knit, and then **Knit to PDF**. Then download the report document to your computer and upload that to Blackboard.
