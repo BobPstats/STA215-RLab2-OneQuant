@@ -16,7 +16,7 @@ library(knitr)
 1.  Use Save As and save your copy of this as **Lab 2 Report.Rmd** (drop "starter").
 2.  Fill your name into the Author field above.
 3.  Open the document **STA 215 R Sheet ggformula How-To** from Blackboard and look at the Chapter 3 section. Use that reference to do the analyses requested below.
-4.  As you make changes, I encourage you to just keep Kniting the entire document rather than running code chunks here in the editor.
+4.  As you make changes, I encourage you to just keep Knitting the entire document rather than running code chunks here in the editor.
 
 # Part 1. Sale Price of Home Sales in Ames, Iowa
 
@@ -99,48 +99,56 @@ ames <- read.csv("AmesHousing.csv")
 In Part 2 of this lab, you'll work with data downloaded from the College Scorecard (<https://collegescorecard.ed.gov/>), which is is a tool from the U.S. Department of Education for exploring information about colleges and universities. The dataframe **colleges2** has data on 73 variables for 1,732 institutions that meet these criteria:
 
 -   Is a Title IV school (processes federal financial aid)
+
 -   The "predominant undergraduate degree awarded" is at least a bachelor's degree
 
-## Descriptions of Selected Columns
-
-| COLUMN NAME | DESCRIPTION                                                                                                                                                              |
-|------------------|------------------------------------------------------|
-| control     | Type of Institution, 1=public 2=private                                                                                                                                  |
-| netprice    | Average net price for Title IV institutions                                                                                                                              |
-| ACTCMMID    | Midpoint between the 25th and 75th percentile of ACT cumulative scores.                                                                                                  |
-| RET_FT4     | Proportion of full-time, first-time, degree/certificate-seeking undergraduates who were enrolled at the institution in the fall 1 year after starting at the institution |
-| GradRate8yr | Proportion of entering students that graduated at this school within 8 years of entry                                                                                    |
-| FIRST_GEN   | Proportion of students that are first-generation (GVSU uses a different criteria)                                                                                        |
-
-The code below loads the R dataframe **colleges2** into the workspace. Then **colleges2** is "chained" into a dplyr function to select only a subset of variables to keep, and the resulting narrower dataframe replaces the original. **The dataframe to work with in this section is colleges2.**
+The code below loads the R dataframe **colleges2** into the workspace.
 
 ```{r read-college}
 load("colleges2.rda")
-colleges2 <- colleges2 %>%
-    select(INSTNM, STABBR, control, netprice, ACTCMMID, RET_FT4, GradRate8yr, FIRST_GEN)
 ```
 
 ## 1. Average Net Price of Colleges & Universities Nationwide
 
-(a) Request basic numerical summaries of **netprice** and a histogram of **netprice.**
+(a) Enter two commands in the code chunk below to request basic numerical summaries of **netprice** and a histogram of **netprice.** Then below the code chunk describe the distribution, addressing the three key characteristics: shape, center, and spread.
 
 ```{r, colleges partA}
 
 ```
 
-(b) Describe the distribution, addressing the three key characteristics: shape, center, and spread.
-
 **ANSWER:**
 
-(c) Below write code to get side-by-side boxplots with **netprice** for the response variable, and **control** for the explanatory variable. (See 215 R sheet - CH 3 - **Boxplot By-Group**.)
+## 2. Number of degree-seeking undergraduates (UGDS)
 
-```{r, colleges partC}
+CPM (copy, paste, and modify) the commands from the previous code chunk to request basic summary statistics and a histogram of the column **UGDS**. Add a third command to also produce a boxplot of this column.
+
+```{r, ugds}
 
 ```
 
-(d) Write a sentence or two comparing the distribution of **netprice** for private vs public schools.
+(a) Describe the distribution of this variable (shape, center, and spread).
 
 **ANSWER:**
+
+(b) Comment on the presence of outliers in the data set.
+
+**ANSWER:**
+
+## 3. Graduation Rate (GradRate8yr)
+
+The variable **GradRate8yr** is the proportion of entering students that graduated at this school within 8 years of entry. Enter two commands in the code chunk below to request basic numerical summaries and a histogram of this column. Then below the code chunk describe the distribution, addressing the three key characteristics: shape, center, and spread.
+
+```{r, gradrate}
+
+```
+
+**ANSWER:**
+
+### Read some remarks about this kind of variable
+
+There is a key observation to make about this variable. For any individual school the value of this variable (a proportion) was computed from a nominal categorical variable (graduated or not). We say the data used within a school are *student-level* data -- a row corresponds to one student.
+
+However, when analyzing the College Scorecard data, the data are *school-level* data -- a row corresponds to one school. Graduation rate functions as a quantitative characteristic of that school. It is common to analyze a percent or rate variable for which each value was a summary statistic computed from a categorical variable at a lower level of analysis.
 
 ------------------------------------------------------------------------
 
@@ -148,33 +156,33 @@ colleges2 <- colleges2 %>%
 
 ### Some data wrangling -- create dataframes MIschools and GV (code provided)
 
-The first chained command creates the new dataframe **MIschools**, assigning to it the result of starting from the **colleges2** table and manipulating it in in three ways:
-
--   filter() returns a subset of rows that meet the condition. Then ...
--   select() returns a subset of columns -- the negation operator drops a column (it would have "MI" for every row here). Then ...
--   arrange() sorts the rows by **control** and then by **INSTNM**.
-
-The second chained command defines a new object named **GV**, containing the one row in **MIschools** that has that value of **INSTNM**. So GV is a dataframe with one row. Then kable() prints the **MIschools** data in a nice looking table.
+The code below code creates a dataframe named **MIschools** with only the rows for Michigan schools, keeping only a subset of the variables, and ordering the rows by two variables. Then kable() shows the **MIschools** data in a nice looking table. **MIschools** is the dataframe to be analyzed now. 
 
 ```{r MI schools}
 MIschools <- colleges2 %>% 
   filter(STABBR=="MI") %>%
-  select(-STABBR) %>%
+  select(INSTNM, control, netprice, ACTCMMID, RET_FT4, GradRate8yr, FIRST_GEN) %>%
   arrange(control, INSTNM) 
-
-## Creates a one-row dataframe for GVSU
-GV <- MIschools %>% 
-  filter(INSTNM=="Grand Valley State University") 
 
 kable(MIschools)
 ```
 
+This code creates a one-row dataframe named **GV**. This is used later to create reference lines to show where GVSU falls on variables relative to other schools.
+
+```{r GV}
+## Creates a one-row dataframe for GVSU
+GV <- MIschools %>% 
+  filter(INSTNM=="Grand Valley State University") 
+```
+
 ### 2. Net Price of Michigan Schools
 
-The code below creates a comparative boxplot of **netprice** by **control** for the **MIschools** table. A horizontal reference line is added for GVSU's average net price. The use of the chaining operator, %\>%, allows us to overlay additional plot elements. In the style of Mad Libs, complete the sentence below by replacing the placeholders with your words.
+The code below creates a comparative boxplot of **netprice** by **control** for the **MIschools** table. Control indicates the type of Institution (1=public 2=private).
+
+A horizontal reference line is added for GVSU's average net price. The use of the chaining operator, %\>%, allows us to overlay additional plot elements. In the style of Mad Libs, complete the sentence below by replacing the placeholders with your words.
 
 ```{r MI net price}
-gf_boxplot(netprice~control, data=MIschools) %>%
+gf_boxplot(netprice~control, data=MIschools)  %>% 
   gf_hline(yintercept=~GV$netprice, color="darkblue", linetype="dashed", size=1)
 ```
 
@@ -184,7 +192,7 @@ gf_boxplot(netprice~control, data=MIschools) %>%
 
 In each of the next sections, you are to do two things:
 
-1.  Copy/Paste/Modify (CPM) the command from above to create a comparative boxplot for the specified variable. You'll need to change the variable name in two places. You must match the case for variable names.
+1.  Copy/Paste/Modify (CPM) the command from above to create a comparative boxplot for the specified variable. You'll need to replace the variable name in two places. You must match the case for variable names.
 2.  Complete the interpretive sentence that follows by filling in words where indicated.
 
 ### 3. Retention Rate (RET_FT4)
